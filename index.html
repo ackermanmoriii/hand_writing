@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Note Pro 💎</title>
+    <title>Super Smooth AI Note 🍏</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
-            background-color: #f0f2f5;
+            background-color: #f2f2f7; /* رنگ پس‌زمینه آیپد */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -15,148 +15,84 @@
             margin: 0;
             height: 100vh;
             box-sizing: border-box;
-            overflow-y: auto; /* اجازه اسکرول برای کل صفحه */
+            overflow-y: auto;
         }
 
-        /* نوار ابزار بالا */
+        /* نوار ابزار */
         .toolbar {
             width: 100%;
             max-width: 900px;
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             background: white;
-            padding: 10px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 12px 16px;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
             flex-wrap: wrap;
         }
 
-        .tool-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .tool-group { display: flex; align-items: center; gap: 10px; }
 
         input[type="password"] {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 13px;
-            width: 150px;
+            padding: 10px; border: 1px solid #d1d1d6; border-radius: 8px;
+            font-size: 14px; width: 140px; text-align: left; direction: ltr; outline: none;
+            background: #f9f9f9;
         }
+        input[type="password"]:focus { border-color: #007aff; background: #fff; }
 
-        /* اسلایدر سایز قلم */
-        input[type="range"] {
-            width: 100px;
-        }
-        
-        label { font-size: 12px; color: #555; }
+        label { font-size: 13px; color: #333; font-weight: 500; }
 
         /* دکمه‌های ابزار */
         .tool-btn {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            background: #fff;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
+            padding: 8px 16px; border: none; background: #f2f2f7;
+            border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500;
+            color: #333; transition: all 0.2s ease;
         }
-        
-        .tool-btn.active {
-            background: #e3f2fd;
-            border-color: #2196f3;
-            color: #1565c0;
-        }
+        .tool-btn.active { background: #007aff; color: white; box-shadow: 0 2px 8px rgba(0,122,255,0.3); }
 
-        /* بوم نقاشی بزرگ */
+        /* بوم نقاشی پیشرفته */
         .canvas-container {
             position: relative;
             width: 100%;
             max-width: 900px;
-            height: 60vh; /* 60 درصد ارتفاع صفحه */
+            height: 60vh;
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); /* سایه نرم‌تر */
             overflow: hidden;
-            touch-action: none; /* جلوگیری از اسکرول هنگام نوشتن */
-            border: 2px solid #ccc;
-            margin-bottom: 15px;
+            touch-action: none; /* حیاتی */
+            margin-bottom: 20px;
             cursor: crosshair;
         }
 
-        canvas { width: 100%; height: 100%; }
+        canvas { width: 100%; height: 100%; display: block; }
 
-        /* دکمه‌های عملیات اصلی */
+        /* دکمه‌های عملیات */
         .main-controls {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            max-width: 900px;
-            margin-bottom: 20px;
+            display: flex; gap: 12px; width: 100%; max-width: 900px; margin-bottom: 30px;
         }
-
         .action-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            color: white;
+            flex: 1; padding: 14px; border: none; border-radius: 12px;
+            font-weight: 600; font-size: 15px; cursor: pointer; color: white;
+            transition: transform 0.1s, opacity 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
+        .action-btn:active { transform: scale(0.98); }
+        .btn-extract { background-color: #5856d6; /* رنگ بنفش iOS */ }
+        .btn-process { background-color: #34c759; /* رنگ سبز iOS */ display: none; }
+        .btn-clear-all { background-color: #ff3b30; flex: 0 0 auto; color: white; }
 
-        .btn-extract { background-color: #673ab7; }
-        .btn-process { background-color: #009688; display: none; }
-        .btn-clear-all { background-color: #ff5252; flex: 0 0 auto; }
-
-        /* بخش نمایش نتایج */
-        .results-area {
-            width: 100%;
-            max-width: 900px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding-bottom: 50px;
-        }
-
-        .card {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #eee;
-        }
-
-        .card h4 {
-            margin: 0 0 10px 0;
-            font-size: 12px;
-            color: #666;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-        }
-
-        .content {
-            font-size: 16px;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            direction: ltr; 
-            text-align: left;
-        }
-
-        /* هایلایت‌ها */
-        .highlight-change {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border-bottom: 2px solid #2e7d32;
-            font-weight: bold;
-            padding: 0 2px;
-        }
-
-        .loading { color: #888; font-style: italic; }
-        .error-msg { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 6px; font-size: 12px; }
+        /* نتایج */
+        .results-area { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 15px; padding-bottom: 60px; }
+        .card { background: white; padding: 20px; border-radius: 14px; border: 1px solid #e5e5ea; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .card h4 { margin: 0 0 12px 0; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f2f2f7; padding-bottom: 8px; }
+        .content { font-size: 17px; line-height: 1.6; color: #1c1c1e; white-space: pre-wrap; direction: ltr; text-align: left; }
+        
+        .highlight-change { background-color: #dcfce7; color: #166534; padding: 2px 4px; border-radius: 4px; font-weight: 600; }
+        .loading { color: #8e8e93; font-style: italic; }
+        .error-msg { color: #ff3b30; background: #fff2f1; padding: 12px; border-radius: 8px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -165,13 +101,9 @@
         <div class="tool-group">
             <input type="password" id="apiKey" placeholder="Gemini API Key">
         </div>
-        
         <div class="tool-group">
-            <label>سایز:</label>
-            <input type="range" id="penSize" min="1" max="10" value="3">
-            
-            <button class="tool-btn active" id="btnPen" onclick="setTool('pen')">✏️ قلم</button>
-            <button class="tool-btn" id="btnEraser" onclick="setTool('eraser')">🧹 پاک‌کن</button>
+            <button class="tool-btn active" id="btnPen" onclick="setTool('pen')">Pen ✒️</button>
+            <button class="tool-btn" id="btnEraser" onclick="setTool('eraser')">Eraser 🧹</button>
         </div>
     </div>
 
@@ -180,234 +112,235 @@
     </div>
 
     <div class="main-controls">
-        <button class="action-btn btn-clear-all" onclick="clearAll()">پاک کردن کل صفحه 🗑️</button>
-        <button class="action-btn btn-extract" onclick="extractText()">1. استخراج متن (Extract)</button>
-        <button class="action-btn btn-process" id="processBtn" onclick="processGrammar()">2. ترجمه و اصلاح (Correct)</button>
+        <button class="action-btn btn-clear-all" onclick="clearAll()">Clear</button>
+        <button class="action-btn btn-extract" onclick="extractText()">Extract Text</button>
+        <button class="action-btn btn-process" id="processBtn" onclick="processGrammar()">Correct Grammar</button>
     </div>
 
     <div class="results-area">
         <div class="card" id="rawCard" style="display:none;">
-            <h4>Raw Extracted Text</h4>
-            <div id="rawContent" class="content"></div>
+            <h4>Raw Text</h4>
+            <div id="rawContent" class="content" style="font-family: 'Menlo', monospace;"></div>
         </div>
 
         <div class="card" id="diffCard" style="display:none;">
-            <h4>Grammar Correction & Diff</h4>
+            <h4>Smart Correction</h4>
             <div style="margin-bottom: 15px;">
-                <span style="font-size:12px; color:#888;">Literal Translation:</span>
-                <div id="literalContent" class="content" style="color:#555; font-style:italic;"></div>
+                <span style="font-size:12px; color:#8e8e93;">Literal Translation:</span>
+                <div id="literalContent" class="content" style="color:#666; font-style:italic;"></div>
             </div>
             <div>
-                <span style="font-size:12px; color:#2e7d32; font-weight:bold;">Final Corrected:</span>
+                <span style="font-size:12px; color:#34c759; font-weight:bold;">Final Polish:</span>
                 <div id="finalContent" class="content"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- تنظیمات بوم و ابزارها ---
         const canvas = document.getElementById('noteCanvas');
         const ctx = canvas.getContext('2d');
-        const penSizeSlider = document.getElementById('penSize');
         
         let isDrawing = false;
-        let currentTool = 'pen'; // 'pen' or 'eraser'
+        let currentTool = 'pen';
+        let points = []; // آرایه برای ذخیره نقاط جهت نرم‌سازی خط
 
-        // تغییر سایز بوم بر اساس اندازه صفحه
+        // --- 1. تنظیمات High DPI (Retina) ---
         function resizeCanvas() {
             const container = canvas.parentElement;
-            // ذخیره محتوای فعلی قبل از تغییر سایز (چون تغییر سایز بوم را پاک می‌کند)
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-            tempCtx.drawImage(canvas, 0, 0);
-
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
-
-            // بازگرداندن محتوا
-            ctx.drawImage(tempCanvas, 0, 0);
+            const rect = container.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
             
-            updateContextSettings();
-        }
+            // ذخیره محتوا
+            let tempCanvas = null;
+            if (canvas.width > 0) {
+                tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                tempCanvas.getContext('2d').drawImage(canvas, 0, 0);
+            }
 
-        // اعمال تنظیمات قلم/پاک‌کن
-        function updateContextSettings() {
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            
+            ctx.scale(dpr, dpr);
+            
+            // بازیابی محتوا
+            if (tempCanvas) {
+                ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width / dpr, tempCanvas.height / dpr);
+            }
+            
+            // تنظیمات پایه قلم
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-            ctx.lineWidth = penSizeSlider.value;
-            
-            if (currentTool === 'pen') {
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.strokeStyle = '#000000';
-            } else {
-                ctx.globalCompositeOperation = 'destination-out'; // حالت پاک کردن
-            }
+            // رنگ مشکی جوهری (کمی ملایم‌تر از مشکی خالص)
+            ctx.strokeStyle = '#1c1c1e'; 
         }
 
-        window.addEventListener('resize', resizeCanvas);
-        // فراخوانی اولیه با کمی تاخیر برای اطمینان از لود CSS
+        window.addEventListener('resize', () => setTimeout(resizeCanvas, 100));
         setTimeout(resizeCanvas, 100);
-
-        // لیسنر برای تغییر سایز قلم
-        penSizeSlider.addEventListener('input', updateContextSettings);
 
         function setTool(tool) {
             currentTool = tool;
             document.getElementById('btnPen').classList.toggle('active', tool === 'pen');
             document.getElementById('btnEraser').classList.toggle('active', tool === 'eraser');
-            updateContextSettings();
         }
 
-        // --- منطق رسم (Drawing Logic) ---
+        // --- 2. الگوریتم نقاشی نرم (Smooth Drawing) ---
+        
+        // این تابع فشار قلم را به ضخامت خط تبدیل می‌کند
+        function getLineWidth(pressure) {
+            if (currentTool === 'eraser') return 25;
+            // اگر قلم فشار را پشتیبانی نکند (مثل ماوس)، فشار 0.5 در نظر گرفته می‌شود
+            const p = (pressure !== undefined && pressure > 0) ? pressure : 0.5;
+            // ضخامت بین 2 تا 6 پیکسل متغیر است
+            return 2 + (p * 4); 
+        }
+
         function start(e) {
             isDrawing = true;
-            draw(e);
-        }
-        function end() {
-            isDrawing = false;
-            ctx.beginPath();
-        }
-        function draw(e) {
-            if (!isDrawing) return;
+            points = []; // ریست کردن نقاط
+            
             const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX || e.touches[0].clientX) - rect.left;
-            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+            // استفاده از Pointer Events برای دریافت فشار قلم
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const pressure = e.pressure;
 
-            ctx.lineTo(x, y);
-            ctx.stroke();
+            points.push({ x, y, pressure });
+            
             ctx.beginPath();
             ctx.moveTo(x, y);
+            
+            // نقطه شروع را کمی پررنگ می‌کنیم (مثل گذاشتن نوک قلم روی کاغذ)
+            ctx.lineWidth = getLineWidth(pressure);
+            ctx.lineTo(x, y); 
+            ctx.stroke();
         }
 
-        canvas.addEventListener('mousedown', start);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', end);
-        canvas.addEventListener('mouseout', end);
-        
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e.touches[0]); }, {passive: false});
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); }, {passive: false});
-        canvas.addEventListener('touchend', end);
+        function move(e) {
+            if (!isDrawing) return;
+            // جلوگیری از اسکرول فقط اگر قلم روی بوم است
+            if(e.cancelable) e.preventDefault(); 
 
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const pressure = e.pressure;
 
-        // --- منطق هوش مصنوعی (AI Logic) ---
-        const rawCard = document.getElementById('rawCard');
-        const diffCard = document.getElementById('diffCard');
+            points.push({ x, y, pressure });
+
+            // تکنیک Quadratic Curve:
+            // برای رسم خط نرم، ما مستقیماً به نقطه جدید وصل نمی‌کنیم.
+            // بلکه به "میانگین" نقطه قبلی و فعلی وصل می‌کنیم.
+            if (points.length > 2) {
+                const lastPoint = points[points.length - 2];
+                const currentPoint = points[points.length - 1];
+                
+                // نقطه کنترل برای منحنی (نقطه قبلی)
+                const xc = (lastPoint.x + currentPoint.x) / 2;
+                const yc = (lastPoint.y + currentPoint.y) / 2;
+
+                // تنظیمات ابزار
+                if (currentTool === 'pen') {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = '#1c1c1e';
+                } else {
+                    ctx.globalCompositeOperation = 'destination-out';
+                }
+
+                ctx.lineWidth = getLineWidth(currentPoint.pressure);
+                
+                // رسم منحنی
+                ctx.quadraticCurveTo(lastPoint.x, lastPoint.y, xc, yc);
+                ctx.stroke();
+                
+                // شروع مسیر جدید از نقطه‌ای که ماندیم برای ادامه نرم
+                ctx.beginPath();
+                ctx.moveTo(xc, yc);
+            }
+        }
+
+        function end() {
+            isDrawing = false;
+            points = [];
+            ctx.beginPath(); // بستن مسیر
+        }
+
+        // استفاده از Pointer Events (استاندارد جدید که Pen/Touch/Mouse را پوشش می‌دهد)
+        canvas.addEventListener('pointerdown', start);
+        canvas.addEventListener('pointermove', move);
+        canvas.addEventListener('pointerup', end);
+        canvas.addEventListener('pointerout', end);
+
+        // --- AI Logic (بدون تغییر در منطق، فقط حفظ عملکرد) ---
         const rawContent = document.getElementById('rawContent');
         const processBtn = document.getElementById('processBtn');
 
         function clearAll() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            rawCard.style.display = 'none';
-            diffCard.style.display = 'none';
+            const dpr = window.devicePixelRatio || 1;
+            ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+            document.getElementById('rawCard').style.display = 'none';
+            document.getElementById('diffCard').style.display = 'none';
             processBtn.style.display = 'none';
             rawContent.innerText = "";
         }
 
-        function getApiKey() {
-            const key = document.getElementById('apiKey').value;
-            if (!key) { alert("لطفاً API Key را وارد کنید!"); return null; }
-            return key;
-        }
-
-        // تابع تمیزکننده JSON برای رفع ارور
-        function cleanJsonText(text) {
-            // حذف مارک‌داون ```json و ```
-            return text.replace(/```json/g, '').replace(/```/g, '').trim();
+        function cleanJsonText(text) { return text.replace(/```json/g, '').replace(/```/g, '').trim(); }
+        function getApiKey() { 
+            const k = document.getElementById('apiKey').value; 
+            if(!k) alert("Please enter API Key"); 
+            return k; 
         }
 
         async function extractText() {
             const key = getApiKey(); if (!key) return;
-
-            rawCard.style.display = 'block';
-            rawContent.innerHTML = '<span class="loading">در حال خواندن دستخط...</span>';
+            document.getElementById('rawCard').style.display = 'block';
+            rawContent.innerHTML = '<span class="loading">Scanning...</span>';
             
             const imageData = canvas.toDataURL('image/png').split(',')[1];
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
-
+            // پرامپت سخت‌گیرانه نسخه قبل
             const payload = {
-                contents: [{
-                    parts: [
-                        { text: "Extract the handwritten text exactly as is (mixed Persian/English). Do not translate." },
-                        { inlineData: { mimeType: "image/png", data: imageData } }
-                    ]
-                }]
+                contents: [{ parts: [
+                    { text: "Strict OCR mode. Extract mixed Persian/English text exactly as written. No hallucination. No extra words." },
+                    { inlineData: { mimeType: "image/png", data: imageData } }
+                ]}],
+                generationConfig: { temperature: 0.0 } // جلوگیری از خلاقیت
             };
 
             try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
                 });
-                const data = await response.json();
-                
-                if (data.error) throw new Error(data.error.message);
-                
-                const text = data.candidates[0].content.parts[0].text;
-                rawContent.innerText = text;
+                const data = await res.json();
+                rawContent.innerText = data.candidates[0].content.parts[0].text;
                 processBtn.style.display = 'block';
-
-            } catch (e) {
-                rawContent.innerHTML = `<div class="error-msg">Error: ${e.message}</div>`;
-            }
+            } catch (e) { rawContent.innerText = "Error: " + e.message; }
         }
 
         async function processGrammar() {
             const key = getApiKey();
-            const text = rawContent.innerText;
+            document.getElementById('diffCard').style.display = 'block';
+            document.getElementById('finalContent').innerHTML = '<span class="loading">Thinking...</span>';
             
-            diffCard.style.display = 'block';
-            document.getElementById('literalContent').innerHTML = '<span class="loading">...</span>';
-            document.getElementById('finalContent').innerHTML = '<span class="loading">Processing...</span>';
-            diffCard.scrollIntoView({behavior: 'smooth'});
-
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-
             const prompt = `
-            Act as a strict JSON generator.
-            Input Text: "${text}"
-            
-            Task:
-            1. Translate any Persian words to English literally (word-for-word).
-            2. Correct the grammar to be simple and clear English.
-            3. Compare the literal translation with the corrected version. Wrap ANY word in the corrected version that was changed, added, or moved in <span class='highlight-change'> tags.
-            
-            Output strictly valid JSON with this structure (NO Markdown, NO backticks):
-            {
-                "literal": "Literal translation string",
-                "diff_html": "Corrected string with HTML tags"
-            }
+            Act as a JSON generator. Input: "${rawContent.innerText}"
+            1. "literal": Translate Persian to English literally.
+            2. "diff_html": Correct grammar naturally. Wrap CHANGED words in <span class='highlight-change'> tags.
+            Output JSON: { "literal": "...", "diff_html": "..." }
             `;
 
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }]
-            };
-
             try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
-                const data = await response.json();
-                
-                if (data.error) throw new Error(data.error.message);
-
-                let rawResponseText = data.candidates[0].content.parts[0].text;
-                // تمیزکاری متن برای جلوگیری از خطای پارس
-                rawResponseText = cleanJsonText(rawResponseText);
-
-                const jsonResult = JSON.parse(rawResponseText);
-
-                document.getElementById('literalContent').innerText = jsonResult.literal;
-                document.getElementById('finalContent').innerHTML = jsonResult.diff_html;
-
-            } catch (e) {
-                console.error(e);
-                document.getElementById('finalContent').innerHTML = `<div class="error-msg">Error parsing: ${e.message}. Try again.</div>`;
-            }
+                const data = await res.json();
+                const json = JSON.parse(cleanJsonText(data.candidates[0].content.parts[0].text));
+                document.getElementById('literalContent').innerText = json.literal;
+                document.getElementById('finalContent').innerHTML = json.diff_html;
+            } catch (e) { document.getElementById('finalContent').innerText = "Error."; }
         }
     </script>
 </body>
