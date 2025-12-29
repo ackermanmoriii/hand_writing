@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart AI Handwriting Diff</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h2 { margin-bottom: 10px; color: #1a1a1a; text-align: center; font-size: 1.5rem; }
+        .subtitle { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
+
+        /* ورودی API */
+        .config-area { width: 100%; max-width: 800px; margin-bottom: 15px; }
+        input[type="password"] {
+            width: 100%; padding: 12px; border: 1px solid #ccc;
+            border-radius: 8px; font-size: 14px; box-sizing: border-box;
+        }
+
+        /* بوم نقاشی */
+        .canvas-wrapper {
+            position: relative; width: 100%; max-width: 800px; height: 300px;
+            background: white; border-radius: 16px; border: 2px solid #e1e4e8;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden;
+            touch-action: none; margin-bottom: 15px;
+        }
+        canvas { width: 100%; height: 100%; cursor: crosshair; }
+
+        /* دکمه‌ها */
+        .controls {
+            display: flex; gap: 10px; width: 100%; max-width: 800px;
+            margin-bottom: 20px; flex-wrap: wrap;
+        }
+        button {
+            flex: 1; padding: 14px; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            transition: transform 0.1s; white-space: nowrap;
+        }
+        button:active { transform: scale(0.98); }
+        .btn-clear { background: #ffebee; color: #c62828; flex: 0 0 auto; }
+        .btn-extract { background: #e3f2fd; color: #1565c0; }
+        .btn-process { background: #e8f5e9; color: #2e7d32; display: none; }
+
+        /* نمایش نتایج */
+        .results-container {
+            width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 15px;
+        }
+        .card {
+            background: white; padding: 15px; border-radius: 12px;
+            border: 1px solid #eee; position: relative;
+        }
+        .card h4 {
+            margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase;
+            color: #888; letter-spacing: 1px; display: flex; justify-content: space-between;
+        }
+        .content {
+            font-size: 16px; line-height: 1.6; color: #333;
+            white-space: pre-wrap; direction: ltr; text-align: left;
+        }
+
+        /* استایل‌های اختصاصی برای مقایسه */
+        .highlight-change {
+            background-color: #d1e7dd; /* سبز کمرنگ */
+            color: #0f5132;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-decoration: underline;
+            text-decoration-color: #0f5132;
+        }
+        
+        .literal-text { color: #666; font-style: italic; }
+
+        #rawCard { border-left: 4px solid #90caf9; }
+        #diffCard { border-left: 4px solid #66bb6a; display: none; }
+
+        .loading { color: #888; font-style: italic; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <h2>Handwriting Fixer ✍️</h2>
+    <div class="subtitle">OCR &rarr; Translate &rarr; Grammar Check &rarr; Diff</div>
+
+    <div class="config-area">
+        <input type="password" id="apiKey" placeholder="Gemini API Key">
+    </div>
+
+    <div class="canvas-wrapper">
+        <canvas id="noteCanvas"></canvas>
+    </div>
+
+    <div class="controls">
+        <button class="btn-clear" onclick="clearAll()">Clear 🗑️</button>
+        <button class="btn-extract" onclick="extractText()">1. Extract Text 👁️</button>
+        <button class="btn-process" id="processBtn" onclick="processGrammar()">2. Translate & Correct ✅</button>
+    </div>
+
+    <div class="results-container">
+        <div class="card" id="rawCard">
+            <h4>Raw Input (Mixed)</h4>
+            <div id="rawContent" class="content">...</div>
+        </div>
+
+        <div class="card" id="diffCard">
+            <h4>Grammar Correction & Diff</h4>
+            
+            <div style="margin-bottom: 10px;">
+                <span style="font-size: 12px; color: #999;">Literal Translation:</span><br>
+                <div id="literalContent" class="content literal-text"></div>
+            </div>
+            
+            <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+                <span style="font-size: 12px; color: #4caf50; font-weight: bold;">Final Corrected (Highlights):</span><br>
+                <div id="finalContent" class="content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Canvas Logic ---
+        const canvas = document.getElementById('noteCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            const p = canvas.parentElement;
+            canvas.width = p.clientWidth; canvas.height = p.clientHeight;
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#222'; ctx.lineWidth = 3;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let isDrawing = false;
+        function start(e) { isDrawing = true; draw(e); }
+        function end() { isDrawing = false; ctx.beginPath(); }
+        function draw(e) {
+            if (!isDrawing) return;
+            const r = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - r.left;
+            const y = (e.clientY || e.touches[0].clientY) - r.top;
+            ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
+        }
+
+        canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', end); canvas.addEventListener('mouseout', end);
+        canvas.addEventListener('touchstart', (e) => {e.preventDefault(); start(e.touches[0])}, {passive:false});
+        canvas.addEventListener('touchmove', (e) => {e.preventDefault(); draw(e.touches[0])}, {passive:false});
+        canvas.addEventListener('touchend', end);
+
+        // --- App Logic ---
+        const rawContent = document.getElementById('rawContent');
+        const literalContent = document.getElementById('literalContent');
+        const finalContent = document.getElementById('finalContent');
+        const diffCard = document.getElementById('diffCard');
+        const processBtn = document.getElementById('processBtn');
+
+        function getApiKey() {
+            const k = document.getElementById('apiKey').value;
+            if(!k) alert("Please enter API Key");
+            return k;
+        }
+
+        function clearAll() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            rawContent.innerText = "...";
+            diffCard.style.display = 'none';
+            processBtn.style.display = 'none';
+        }
+
+        async function extractText() {
+            const key = getApiKey(); if(!key) return;
+            rawContent.innerHTML = '<span class="loading">Reading handwriting...</span>';
+            
+            const img = canvas.toDataURL('image/png').split(',')[1];
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+            
+            const payload = {
+                contents: [{ parts: [
+                    { text: "Extract text from this handwriting perfectly. It contains mixed Persian and English. Do not translate. Output only the raw text." },
+                    { inlineData: { mimeType: "image/png", data: img } }
+                ]}]
+            };
+
+            try {
+                const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+                const data = await res.json();
+                const text = data.candidates[0].content.parts[0].text;
+                rawContent.innerText = text;
+                processBtn.style.display = 'block';
+                processBtn.scrollIntoView({behavior:"smooth"});
+            } catch(e) { console.error(e); rawContent.innerText = "Error extracting."; }
+        }
+
+        async function processGrammar() {
+            const key = getApiKey();
+            const text = rawContent.innerText;
+            if(!key || !text) return;
+
+            diffCard.style.display = 'block';
+            literalContent.innerHTML = '<span class="loading">Translating...</span>';
+            finalContent.innerHTML = '<span class="loading">Correcting grammar...</span>';
+            diffCard.scrollIntoView({behavior:"smooth"});
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+            
+            // پرامپت مهندسی شده برای JSON خروجی
+            const prompt = `
+            Task: Translate mixed Persian/English to English, then correct grammar.
+            Input Text: "${text}"
+            
+            Steps:
+            1. Translate literal: Translate Persian words to English directly (word-for-word if needed) to form a rough English sentence.
+            2. Grammar Correction: As a professional grammar corrector you must correct to simplified and clarified and easy understand able grammar.
+            3. Highlight: In the corrected sentence, identify which parts were changed/added compared to the literal meaning to make it grammatically correct.
+            
+            Output Format: JSON ONLY. No markdown code blocks.
+            {
+                "literal_translation": "The rough direct translation string",
+                "corrected_text": "The final perfect string",
+                "diff_html": "The final string but wrap the CORRECTED/CHANGED parts in <span class='highlight-change'> tags"
+            }
+            `;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { responseMimeType: "application/json" } // Force JSON output
+            };
+
+            try {
+                const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+                const data = await res.json();
+                const jsonResponse = JSON.parse(data.candidates[0].content.parts[0].text);
+
+                literalContent.innerText = jsonResponse.literal_translation;
+                // حذف تگ‌های HTML اگر در متن ساده وجود داشت برای امنیت، سپس جایگذاری HTML هایلایت شده
+                finalContent.innerHTML = jsonResponse.diff_html; 
+
+            } catch(e) {
+                console.error(e);
+                literalContent.innerText = "Error.";
+                finalContent.innerText = "Failed to process grammar.";
+            }
+        }
+    </script>
+</body>
+</html>
